@@ -1,0 +1,6 @@
+*.o
+*.tmp
+
+lota
+
+build
