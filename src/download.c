@@ -38,6 +38,7 @@ int lota_download(const char *url, const char *save_path)
     CURL *curl;
     FILE *fp;
     CURLcode res;
+    int ret = 0;
    
     curl = curl_easy_init();
     if (curl) {
@@ -46,9 +47,13 @@ int lota_download(const char *url, const char *save_path)
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
         res = curl_easy_perform(curl);
+        if (res != CURLE_OK) {
+            ret = -1;
+        }
         /* always cleanup */
         curl_easy_cleanup(curl);
         fclose(fp);
     }
-    return 0;
+    
+    return ret;
 }

@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include "lota.h"
 
-int main(int argc, char *agrv)
+static const char *url = "https://static.getiot.tech/flag-of-china.png";
+static const char *file = "./test.png";
+
+int main(int argc, char *agrv[])
 {
     printf(" _      ____ _______         \n");
     printf("| |    / __ \\__   __|/\\    \n");
@@ -11,10 +14,12 @@ int main(int argc, char *agrv)
     printf("|______\\____/  |_/_/    \\_\\ \n");
     printf("\n");
 
-    char *url = "http://static.getiot.tech/flag-of-china.png";
-    char *file = "./test.png";
+    printf("Download begin...\n");
 
-    lota_download(url, file);
+    if (0 > lota_download(url, file)) {
+        printf("Download failed.\n");
+    }
+    printf("Download success.\n");
 
     return 0;
 }
