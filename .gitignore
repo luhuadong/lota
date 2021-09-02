@@ -1,7 +1,14 @@
 *.o
 *.tmp
+*.zip
+*.tar*
+*.png
+*.jpg
+*.jpeg
+*.webp
 
 lota
 
-build
+bin/
+build/
 .vscode/

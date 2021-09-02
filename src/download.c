@@ -5,7 +5,7 @@
 
 static int check_remote_file_exist(const char *url)
 {
-    CURL * curl_fd = curl_easy_init();
+    CURL *curl_fd = curl_easy_init();
     CURLcode code = -1;
     CURLINFO response_code = 0;
     curl_easy_setopt(curl_fd, CURLOPT_NOBODY, 1);
