@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <curl/curl.h>
 #include "md5.h"
 
 #define READ_DATA_SIZE	1024
@@ -93,4 +95,27 @@ int check_md5_file(const char *file_path, char *md5_str)
     }
 
     return 0;
+}
+
+bool isaurl(const char *url)
+{
+    CURL *curl;
+    CURLcode response;
+
+    curl = curl_easy_init();
+
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+
+        /* don't write output to stdout */
+        curl_easy_setopt(curl, CURLOPT_NOBODY, 1);
+
+        /* Perform the request */
+        response = curl_easy_perform(curl);
+
+        /* always cleanup */
+        curl_easy_cleanup(curl);
+    }
+
+    return (response == CURLE_OK) ? true : false;
 }
