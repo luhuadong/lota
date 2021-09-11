@@ -5,11 +5,13 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include "lota.h"
+#include "cJSON.h"
 
 #define ADDRESS         "tcp://localhost:1883" /* 更改此处地址 */
 #define CLIENTID        "ota"                  /* 更改此处客户端ID */
 #define OTA_TOPIC       "/ota/device/upgrade"
 #define PAYLOAD         "Ready to OTA"
+#define URL_SIZE        2048
 #define MD5_SIZE		16
 #define MD5_STR_LEN		(MD5_SIZE * 2)
 
@@ -20,7 +22,7 @@ static pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 static sem_t sem;
 
 typedef struct {
-    char url[2048];
+    char url[URL_SIZE];
     char md5sum[MD5_STR_LEN + 1];
 } ota_info_t;
 
@@ -111,8 +113,8 @@ int main(int argc, char *agrv[])
     mqtt_set_callback(client, user_cb);
     mqtt_connect(client);
     mqtt_subscribe(client, OTA_TOPIC);
-    //mqtt_publish(client, OTA_TOPIC, PAYLOAD);
-    mqtt_publish(client, OTA_TOPIC, url);
+    mqtt_publish(client, OTA_TOPIC, PAYLOAD);
+    //mqtt_publish(client, OTA_TOPIC, url);
 
     while (1) {
         ota_info_t lota;
