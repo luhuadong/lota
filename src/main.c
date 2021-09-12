@@ -15,8 +15,8 @@
 #define MD5_SIZE		16
 #define MD5_STR_LEN		(MD5_SIZE * 2)
 
-static const char *url = "https://static.getiot.tech/flag-of-china.png";
-static const char *file = "test.png";
+static const char *test_url = "https://static.getiot.tech/flag-of-china.png";
+static const char *savefile = "test.png";
 
 static pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 static sem_t sem;
@@ -52,6 +52,8 @@ static int run_ota(ota_info_t *ota)
 
     /* Downloading */
     printf("Download begin...\n");
+    char *file = get_name_from_url(ota->url, strlen(ota->url)+1);
+    printf("Target: %s\n", file);
 
     ret = lota_download(ota->url, file);
     if (ret < 0) {
@@ -114,7 +116,7 @@ int main(int argc, char *agrv[])
     mqtt_connect(client);
     mqtt_subscribe(client, OTA_TOPIC);
     mqtt_publish(client, OTA_TOPIC, PAYLOAD);
-    //mqtt_publish(client, OTA_TOPIC, url);
+    mqtt_publish(client, OTA_TOPIC, test_url);
 
     while (1) {
         ota_info_t lota;

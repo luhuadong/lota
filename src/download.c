@@ -2,6 +2,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+#include <assert.h>
+
+char *get_name_from_url(char *url, int size)
+{
+    int i = size;
+    char *ptr = url;
+
+    ptr += size;
+    while (i-- > 0) {
+        if ((*ptr--) == '/') {
+            break;
+        }
+    }
+    ptr += 2;
+    return ptr;
+}
 
 static int check_remote_file_exist(const char *url)
 {
@@ -30,6 +46,8 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
 
 int lota_download(const char *url, const char *save_path)
 {
+    assert(url);
+
     if(check_remote_file_exist(url) == 404)
     {
         printf("file not existff\n");

@@ -8,6 +8,7 @@
 *.webp
 
 lota
+ota_publish
 
 bin/
 build/

@@ -7,7 +7,7 @@
 #define CLIENTID        "ota_publish"          /* 更改此处客户端ID */
 #define OTA_TOPIC       "/ota/device/upgrade"
 //#define PAYLOAD         "https://static.getiot.tech/flag-of-china.png"
-#define PAYLOAD         "https://github.com/RT-Thread-packages/tinycrypt/archive/refs/tags/1.0.0.zip"
+#define PAYLOAD         "https://static.getiot.tech/HelloRepo-v1.0.0.zip"
 #define QOS         1
 #define TIMEOUT     10000L
 

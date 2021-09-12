@@ -9,6 +9,7 @@
 bool isaurl(const char *url);
 
 int lota_download(const char *url, const char *save_path);
+char *get_name_from_url(char *url, int size);
 
 int check_md5_string(unsigned char *dest_str, unsigned int dest_len, char *md5_str);
 int check_md5_file(const char *file_path, char *md5_str);
