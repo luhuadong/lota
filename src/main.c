@@ -99,6 +99,8 @@ int main(int argc, char *agrv[])
     printf("|______\\____/  |_/_/    \\_\\ \n");
     printf("\n");
 
+    printf("cJSON version: %s\n", cJSON_Version());
+
     /* Init semaphore */
     ret = sem_init(&sem, 0, 0);
 	if (ret == -1) {
