@@ -121,3 +121,25 @@ Message with delivery token 1 delivered
 ```
 
 Now, you can see some files has been downloaded in local directory.
+
+
+
+## Data format
+
+OTA string example:
+
+```json
+{
+	"url":	"https://static.getiot.tech/flag-of-china.png",
+	"md5":	"ff6fd6b184aef070001f72155c1c77e3"
+}
+```
+
+ACK status:
+
+```json
+{
+	"percent":	100
+}
+```
+

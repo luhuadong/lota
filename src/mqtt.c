@@ -9,7 +9,7 @@
 #define QOS         1
 #define TIMEOUT     10000L  /* unit: ms */
 
-typedef void (*user_cb_t)(char *);
+typedef void (*user_cb_t)(char *topic, char *msg);
 static user_cb_t user_callback = NULL;
 
 volatile MQTTClient_deliveryToken deliveredtoken;
@@ -27,7 +27,7 @@ static int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_mes
     printf("   message: %.*s\n\n", message->payloadlen, (char*)message->payload);
     
     if (user_callback) {
-        user_callback((char*)message->payload);
+        user_callback(topicName, (char*)message->payload);
     }
     
     MQTTClient_freeMessage(&message);
@@ -41,7 +41,7 @@ static void connlost(void *context, char *cause)
     printf("     cause: %s\n", cause);
 }
 
-int mqtt_set_callback(MQTTClient client, void (*user_cb)(char *))
+int mqtt_set_callback(MQTTClient client, void (*user_cb)(char *, char *))
 {
     int rc = 0;
 
@@ -86,7 +86,7 @@ int mqtt_connect(MQTTClient client)
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
     conn_opts.username = username; //将用户名写入连接选项中
-    conn_opts.password = password;//将密码写入连接选项中
+    conn_opts.password = password; //将密码写入连接选项中
 
     //使用MQTTClient_connect将client连接到服务器，使用指定的连接选项。成功则返回MQTTCLIENT_SUCCESS
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)

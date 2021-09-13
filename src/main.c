@@ -9,15 +9,16 @@
 
 #define ADDRESS         "tcp://localhost:1883" /* 更改此处地址 */
 #define CLIENTID        "ota"                  /* 更改此处客户端ID */
-#define OTA_TOPIC       "/ota/device/upgrade"
 #define PAYLOAD         "Ready to OTA"
 #define URL_SIZE        2048
 #define MD5_SIZE		16
 #define MD5_STR_LEN		(MD5_SIZE * 2)
+#define CMD_SIZE        256
 
-static const char *test_url = "https://static.getiot.tech/flag-of-china.png";
-static const char *savefile = "test.png";
+#define TEST_URL        "https://static.getiot.tech/flag-of-china.png"
+#define SAVEFILE        "test.png"
 
+static MQTTClient client;
 static pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 static sem_t sem;
 
@@ -28,21 +29,45 @@ typedef struct {
 
 static ota_info_t ota_info;
 
-static void user_cb(char *msg)
+static void user_cb(char *topic, char *msg)
 {
-    if (isaurl(msg)) {
+    printf("## ^_^ ##\n");
 
-        printf("Is a url\n");
-        pthread_rwlock_wrlock(&lock);
+    if (0 == strncmp(topic, OTA_TOPIC, strlen(OTA_TOPIC))) {
 
-        memset(ota_info.url, 0, sizeof(ota_info.url));
-        strncpy(ota_info.url, msg, strlen(msg));
+        // Parsing
+        cJSON *root = cJSON_Parse(msg);
+        printf("%s\n", cJSON_Print(root));
+        cJSON *url_obj = cJSON_GetObjectItem(root, "url");
+        cJSON *md5_obj = cJSON_GetObjectItem(root, "md5");
+        char *url = cJSON_GetStringValue(url_obj);
+        char *md5 = cJSON_GetStringValue(md5_obj);
+        
+        if (isaurl(url)) {
 
-        pthread_rwlock_unlock(&lock);
-        sem_post(&sem);
+            printf("Is a url\n");
+            pthread_rwlock_wrlock(&lock);
+
+            memset(&ota_info, 0, sizeof(ota_info));
+            strncpy(ota_info.url, url, strlen(url));
+            strncpy(ota_info.md5sum, md5, MD5_STR_LEN);
+
+            pthread_rwlock_unlock(&lock);
+            sem_post(&sem);
+        }
+        else {
+            printf("Is not a url\n");
+        }
+
+        cJSON_Delete(root);
+        return;
     }
-    else {
-        printf("Is not a url\n");
+    
+    if (0 == strncmp(topic, CHK_TOPIC, strlen(CHK_TOPIC))) {
+        printf("Send status\n");
+        char *ack_payload = "{\"percent\": 100}";
+        mqtt_publish(client, ACK_TOPIC, ack_payload);
+        return;
     }
 }
 
@@ -72,15 +97,13 @@ static int run_ota(ota_info_t *ota)
     }
     printf("MD5sum: %s  %s\n\n", md5_str, file);
 
-#if 0
     if (0 != strncmp(ota->md5sum, md5_str, MD5_STR_LEN)) {
         printf("Invalid file, MD5 sum did not match.\n");
         return -1;
     }
-#endif
 
     /* Upgrade */
-    char cmd[256] = {0};
+    char cmd[CMD_SIZE] = {0};
     snprintf(cmd, sizeof(cmd), "cp %s /tmp/", file);
     system(cmd);
 
@@ -101,13 +124,13 @@ int main(int argc, char *agrv[])
 
     /* Init semaphore */
     ret = sem_init(&sem, 0, 0);
-	if (ret == -1) {
-		perror("semaphore intitialization failed\n");
-		return -1;
-	}
+    if (ret == -1) {
+        perror("semaphore intitialization failed\n");
+        return -1;
+    }
 
     /* Init MQTT */
-    MQTTClient client = mqtt_create(ADDRESS, CLIENTID);
+    client = mqtt_create(ADDRESS, CLIENTID);
     if (!client) {
         return -1;
     }
@@ -115,8 +138,9 @@ int main(int argc, char *agrv[])
     mqtt_set_callback(client, user_cb);
     mqtt_connect(client);
     mqtt_subscribe(client, OTA_TOPIC);
-    mqtt_publish(client, OTA_TOPIC, PAYLOAD);
-    mqtt_publish(client, OTA_TOPIC, test_url);
+    mqtt_subscribe(client, CHK_TOPIC);
+    //mqtt_publish(client, OTA_TOPIC, PAYLOAD);
+    //mqtt_publish(client, OTA_TOPIC, TEST_URL);
 
     while (1) {
         ota_info_t lota;

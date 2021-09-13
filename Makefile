@@ -16,7 +16,7 @@ $(TARGET):$(OBJS)
 	@echo "Compiled "$<" successfully!"
 
 testcase:
-	@$(CC) test/ota_publish.c -o ota_publish $(LFLAGS)
+	@$(CC) -I./src test/ota_publish.c src/mqtt.c src/cJSON.c -o ota_publish $(LFLAGS)
 	@echo "Compiled ota_publish successfully!"
 
 .PHONY: clean
