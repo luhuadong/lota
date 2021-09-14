@@ -128,12 +128,23 @@ Now, you can see some files has been downloaded in local directory.
 
 OTA string example:
 
-```json
-{
-	"url":	"https://static.getiot.tech/flag-of-china.png",
-	"md5":	"ff6fd6b184aef070001f72155c1c77e3"
-}
-```
+- Remote HTTP server
+
+  ```json
+  {
+  	"url":	"https://static.getiot.tech/flag-of-china.png",
+  	"md5":	"de0e54231f75ecc5ec1bad7143a420e4"
+  }
+  ```
+
+- Local file system
+
+  ```json
+  {
+  	"url":	"file:///run/media/sda1/flag-of-china.png",
+  	"md5":	"de0e54231f75ecc5ec1bad7143a420e4"
+  }
+  ```
 
 ACK status:
 

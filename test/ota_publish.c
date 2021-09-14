@@ -10,7 +10,8 @@
 #define ADDRESS         "tcp://localhost:1883" /* 更改此处地址 */
 #define CLIENTID        "ota_publish"          /* 更改此处客户端ID */
 #define PAYLOAD         "TEST"
-#define PAYLOAD1        "{\"url\": \"https://static.getiot.tech/flag-of-china.png\", \"md5\": \"ff6fd6b184aef070001f72155c1c77e3\"}"
+#define PAYLOAD1        "{\"url\": \"https://static.getiot.tech/flag-of-china.png\", \"md5\": \"de0e54231f75ecc5ec1bad7143a420e4\"}"
+//#define PAYLOAD1        "{\"url\": \"file:///opt/flag-of-china.png\", \"md5\": \"de0e54231f75ecc5ec1bad7143a420e4\"}"
 #define PAYLOAD2        "{\"url\": \"https://static.getiot.tech/HelloRepo-v1.0.0.zip\", \"md5\": \"6b386e3c126c81c14a37f1c404302168\"}"
 #define QOS         1
 #define TIMEOUT     10000L
@@ -59,8 +60,12 @@ int main(int argc, char* argv[])
     rc = mqtt_subscribe(client, ACK_TOPIC);
 
     printf("## publish 1\n");
+    rc = mqtt_publish(client, OTA_TOPIC, PAYLOAD1);
+    sleep(2);
+
+    printf("## publish 2\n");
     rc = mqtt_publish(client, OTA_TOPIC, PAYLOAD2);
-    sleep(1);
+    sleep(2);
 
     printf("## check status\n");
     rc = mqtt_publish(client, CHK_TOPIC, PAYLOAD);
