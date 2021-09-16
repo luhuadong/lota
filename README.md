@@ -62,6 +62,9 @@ LOTA->MQTT Broker: ACK（进度、结果）
 MQTT Broker->UI: 升级成功/失败
 ```
 
+> Figure1. OTA sequence diagram
+
+![](https://luhuadong.gitee.io/k37x-wiki/images/lota-timing-diagram.png)
 
 
 ## Build & Test
