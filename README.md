@@ -151,9 +151,13 @@ OTA string example:
 
 ACK status:
 
+- status: download, check, update
+- progress: 0-100 (percent)
+
 ```json
 {
-	"percent":	100
+	"status":	"download",
+	"progress":	100
 }
 ```
 

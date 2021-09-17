@@ -65,7 +65,7 @@ static void user_cb(char *topic, char *msg)
     
     if (0 == strncmp(topic, CHK_TOPIC, strlen(CHK_TOPIC))) {
         printf("Send status\n");
-        char *ack_payload = "{\"percent\": 100}";
+        char *ack_payload = "{\"status\": \"update\", \"progress\": 100}";
         mqtt_publish(client, ACK_TOPIC, ack_payload);
         return;
     }

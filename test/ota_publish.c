@@ -26,7 +26,7 @@ static void user_cb(char *topic, char *msg)
 
         cJSON *root = cJSON_Parse(msg);
         printf("%s\n", cJSON_Print(root));
-        cJSON *percent_obj = cJSON_GetObjectItem(root, "percent");
+        cJSON *percent_obj = cJSON_GetObjectItem(root, "progress");
         int percent = cJSON_GetNumberValue(percent_obj);
 
         if (percent == 100) {
