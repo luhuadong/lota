@@ -6,6 +6,7 @@
 *.jpg
 *.jpeg
 *.webp
+*.run
 
 lota
 ota_publish

@@ -59,19 +59,27 @@ int lota_download(const char *url, const char *save_path)
     int ret = 0;
    
     curl = curl_easy_init();
-    if (curl) {
-        fp = fopen(save_path,"wb");
-        curl_easy_setopt(curl, CURLOPT_URL, url);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        res = curl_easy_perform(curl);
-        if (res != CURLE_OK) {
-            ret = -1;
-        }
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-        fclose(fp);
+    if (!curl) {
+        return -1;
     }
+    
+    fp = fopen(save_path, "wb");
+    if (!fp) {
+        curl_easy_cleanup(curl);
+        return -1;
+    }
+    
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+    res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+        ret = -1;
+    }
+    
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+    fclose(fp);
     
     return ret;
 }

@@ -62,6 +62,9 @@ LOTA->MQTT Broker: ACK（进度、结果）
 MQTT Broker->UI: 升级成功/失败
 ```
 
+> Figure1. OTA sequence diagram
+
+![](https://luhuadong.gitee.io/k37x-wiki/images/lota-timing-diagram.png)
 
 
 ## Build & Test
@@ -121,3 +124,40 @@ Message with delivery token 1 delivered
 ```
 
 Now, you can see some files has been downloaded in local directory.
+
+
+
+## Data format
+
+OTA string example:
+
+- Remote HTTP server
+
+  ```json
+  {
+  	"url":	"https://static.getiot.tech/flag-of-china.png",
+  	"md5":	"de0e54231f75ecc5ec1bad7143a420e4"
+  }
+  ```
+
+- Local file system
+
+  ```json
+  {
+  	"url":	"file:///run/media/sda1/flag-of-china.png",
+  	"md5":	"de0e54231f75ecc5ec1bad7143a420e4"
+  }
+  ```
+
+ACK status:
+
+- status: download, check, update
+- progress: 0-100 (percent)
+
+```json
+{
+	"status":	"download",
+	"progress":	100
+}
+```
+

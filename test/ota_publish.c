@@ -1,60 +1,81 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
+#include <semaphore.h>
 #include "MQTTClient.h"
+#include "cJSON.h"
+#include "lota.h"
 
 #define ADDRESS         "tcp://localhost:1883" /* 更改此处地址 */
 #define CLIENTID        "ota_publish"          /* 更改此处客户端ID */
-#define OTA_TOPIC       "/ota/device/upgrade"
-//#define PAYLOAD         "https://static.getiot.tech/flag-of-china.png"
-#define PAYLOAD         "https://static.getiot.tech/HelloRepo-v1.0.0.zip"
+#define PAYLOAD         "TEST"
+#define PAYLOAD1        "{\"url\": \"https://static.getiot.tech/flag-of-china.png\", \"md5\": \"de0e54231f75ecc5ec1bad7143a420e4\"}"
+//#define PAYLOAD1        "{\"url\": \"file:///opt/flag-of-china.png\", \"md5\": \"de0e54231f75ecc5ec1bad7143a420e4\"}"
+#define PAYLOAD2        "{\"url\": \"https://static.getiot.tech/HelloRepo-v1.0.0.zip\", \"md5\": \"6b386e3c126c81c14a37f1c404302168\"}"
 #define QOS         1
 #define TIMEOUT     10000L
 
+//声明一个MQTTClient
+static MQTTClient client;
+static sem_t sem;
+
+static void user_cb(char *topic, char *msg)
+{
+    if (0 == strncmp(topic, ACK_TOPIC, strlen(ACK_TOPIC))) {
+
+        cJSON *root = cJSON_Parse(msg);
+        printf("%s\n", cJSON_Print(root));
+        cJSON *percent_obj = cJSON_GetObjectItem(root, "progress");
+        int percent = cJSON_GetNumberValue(percent_obj);
+
+        if (percent == 100) {
+            printf("Completed!\n");
+            sem_post(&sem);
+        }
+
+        cJSON_Delete(root);
+    }
+}
+
 int main(int argc, char* argv[])
 {
-    //声明一个MQTTClient
-    MQTTClient client;
-    char *username = "rudy";      //添加的用户名
-    char *password = "p@ssw0rd";  //添加的密码
     int rc;
 
-    //初始化MQTT Client选项
-    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-    //#define MQTTClient_message_initializer { {'M', 'Q', 'T', 'M'}, 0, 0, NULL, 0, 0, 0, 0 }
-    MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    //声明消息token
-    MQTTClient_deliveryToken token;
-
-    //使用参数创建一个client，并将其赋值给之前声明的client
-    MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
-    conn_opts.keepAliveInterval = 20;
-    conn_opts.cleansession = 1;
-    conn_opts.username = username; //将用户名写入连接选项中
-    conn_opts.password = password;//将密码写入连接选项中
-
-    //使用MQTTClient_connect将client连接到服务器，使用指定的连接选项。成功则返回MQTTCLIENT_SUCCESS
-    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
-    {
-        printf("Failed to connect, return code %d\n", rc);
-        exit(EXIT_FAILURE);
+    /* Init semaphore */
+    rc = sem_init(&sem, 0, 0);
+    if (rc == -1) {
+        perror("semaphore intitialization failed\n");
+        return -1;
     }
 
-    pubmsg.payload = PAYLOAD;
-    pubmsg.payloadlen = strlen(PAYLOAD);
-    pubmsg.qos = QOS;
-    pubmsg.retained = 0;
+    /* Init MQTT */
+    client = mqtt_create(ADDRESS, CLIENTID);
+    if (!client) {
+        return -1;
+    }
 
-    MQTTClient_publishMessage(client, OTA_TOPIC, &pubmsg, &token);
-    printf("Waiting for up to %d seconds for publication of %s\n"
-            "on topic '%s' for client with ClientID: %s\n",
-            (int)(TIMEOUT/1000), PAYLOAD, OTA_TOPIC, CLIENTID);
+    rc = mqtt_set_callback(client, user_cb);
+    rc = mqtt_connect(client);
+    rc = mqtt_subscribe(client, ACK_TOPIC);
 
-    rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
-    printf("Message with delivery token %d delivered\n", token);
+    printf("## publish 1\n");
+    rc = mqtt_publish(client, OTA_TOPIC, PAYLOAD1);
+    sleep(2);
 
-    MQTTClient_disconnect(client, 10000);
-    MQTTClient_destroy(&client);
+    printf("## publish 2\n");
+    rc = mqtt_publish(client, OTA_TOPIC, PAYLOAD2);
+    sleep(2);
+
+    printf("## check status\n");
+    rc = mqtt_publish(client, CHK_TOPIC, PAYLOAD);
+
+    printf("## wait\n");
+    sem_wait(&sem);
+
+    /* Release */
+    rc = mqtt_disconnect(client);
+    mqtt_destroy(client);
 
     return rc;
 }
